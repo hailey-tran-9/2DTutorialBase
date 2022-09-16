@@ -36,6 +36,11 @@ public class PlayerController : MonoBehaviour
     public Slider HPSlider;
     #endregion
 
+    #region Chestplate_variables
+    public bool equipped;
+    int endurance;
+    #endregion
+
     #region Unity_functions
     private void Awake() {
         PlayerRB = GetComponent<Rigidbody2D>();
@@ -47,6 +52,9 @@ public class PlayerController : MonoBehaviour
         currHealth = maxHealth;
 
         HPSlider.value = currHealth / maxHealth;
+
+        equipped = false;
+        endurance = 2;
     }
 
     private void Update() {
@@ -141,8 +149,20 @@ public class PlayerController : MonoBehaviour
         // Call sound effect
         FindObjectOfType<AudioManager>().Play("PlayerHurt");
 
-        // Decrement health
-        currHealth -= value;
+        // Decrement health, if chestplate is equipped half of the dmg is taken
+        if (equipped) {
+            currHealth -= value / 2;
+            Debug.Log("Chestplate reduced dmg!");
+            // Decrease the chestplate's endurance after taking a hit
+            endurance -= 1;
+            // Check whether or not the chestplate has broken
+            if (endurance <= 0) {
+                equipped = false;
+                Debug.Log("Chestplate has broken!");
+            }
+        } else {
+            currHealth -= value;
+        }
         Debug.Log("Health is now " + currHealth.ToString());
 
         // Change UI
@@ -179,6 +199,15 @@ public class PlayerController : MonoBehaviour
         gm.GetComponent<GameManager>().LoseGame();
     }
 
+    #endregion
+
+    #region Equip_functions
+    // Equips chestplate armor on the player
+    public void Equip() {
+        equipped = true;
+        endurance = 2;
+        Debug.Log("Chestplate equipped!");
+    }
     #endregion
 
     #region Interact_functions
